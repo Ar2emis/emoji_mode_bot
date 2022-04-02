@@ -9,6 +9,7 @@ gem 'activeadmin', '~> 2.11.1'
 gem 'bootsnap', '~> 1.11.1', require: false
 gem 'cssbundling-rails', '~> 1.1.0'
 gem 'devise', '~> 4.8.1'
+gem 'httparty', '~> 0.20.0'
 gem 'jsbundling-rails', '~> 1.0.2'
 gem 'pg', '~> 1.1'
 gem 'puma', '~> 5.0'

@@ -3,7 +3,8 @@ default: &default
   encoding: unicode
   username: postgres
   password: postgres
-  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  pool: <%= ENV.fetch('RAILS_MAX_THREADS', 5) %>
+  url: <%= ENV['DATABASE_URL'] %>
 
 development:
   <<: *default
