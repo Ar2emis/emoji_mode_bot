@@ -3,14 +3,7 @@
 class Telegram::WebhookController < Telegram::Bot::UpdatesController
   after_action :update_resources, :current_membership
   after_action :target_user_membership, only: %i[ban! forgive!]
-  after_action :delete_message, except: %i[message action_missing]
-
-  def status!(*)
-    return unless admin?
-
-    info = { chat: current_chat.attributes, air_alert: air_alert.attributes }
-    bot.send_message(chat_id: current_chat.telegram_id, text: info.to_json)
-  end
+  after_action :delete_message, only: %i[ban! forgive! mode! air_alert!]
 
   def ban!(*)
     return unless admin?
@@ -42,6 +35,8 @@ class Telegram::WebhookController < Telegram::Bot::UpdatesController
   def action_missing(action, *_args)
     super
     message
+  rescue StandardError => e
+    Rails.logger.error(e.message)
   end
 
   private
@@ -95,8 +90,7 @@ class Telegram::WebhookController < Telegram::Bot::UpdatesController
   end
 
   def update_resources
-    current_user.update(user_params)
-    current_chat.update(chat_params)
+    current_user.update(user_params) && current_chat.update(chat_params)
   end
 
   def current_membership
