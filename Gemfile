@@ -3,15 +3,18 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.0.3'
+ruby '3.1.2'
 
 gem 'activeadmin', '~> 2.11.1'
+gem 'activeadmin_addons', '~> 1.9.0'
 gem 'bootsnap', '~> 1.11.1', require: false
 gem 'cssbundling-rails', '~> 1.1.0'
 gem 'devise', '~> 4.8.1'
+gem 'draper', '~> 4.0.2'
 gem 'httparty', '~> 0.20.0'
 gem 'jsbundling-rails', '~> 1.0.2'
 gem 'pg', '~> 1.1'
+gem 'pg_search', '~> 2.3.6'
 gem 'puma', '~> 5.0'
 gem 'rails', '~> 7.0.2', '>= 7.0.2.3'
 gem 'sprockets-rails', '~> 3.4.2'

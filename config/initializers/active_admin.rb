@@ -126,7 +126,7 @@ ActiveAdmin.setup do |config|
   # This allows your users to comment on any resource registered with Active Admin.
   #
   # You can completely disable comments:
-  # config.comments = false
+  config.comments = false
   #
   # You can change the name under which comments are registered:
   # config.comments_registration_name = 'AdminComment'
@@ -334,4 +334,11 @@ ActiveAdmin.setup do |config|
   # You can switch to using Webpacker here.
   #
   # config.use_webpacker = true
+
+  config.current_filters = false
+
+  config.register_javascript 'https://cdn.jsdelivr.net/combine/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js'
+  config.register_javascript 'https://unpkg.com/activeadmin_addons_cdn@1.0.2/dist/all_cdn.js'
+  config.register_stylesheet 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css'
+  config.register_stylesheet 'https://unpkg.com/activeadmin_addons_cdn@1.0.2/dist/all_cdn.css'
 end

@@ -3,8 +3,11 @@
   "private": "true",
   "dependencies": {
     "@activeadmin/activeadmin": "^2.11.1",
+    "@rails/ujs": "^6.1.5",
     "autoprefixer": "^10.4.4",
     "esbuild": "^0.14.30",
+    "jquery": "^3.6.0",
+    "jquery-ui": "^1.13.1",
     "postcss": "^8.4.12",
     "sass": "^1.49.11",
     "tailwindcss": "^3.0.23"
@@ -13,6 +16,6 @@
     "build": "esbuild app/javascript/*.* --bundle --sourcemap --outdir=app/assets/builds",
     "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify && sass ./app/assets/stylesheets/active_admin.scss ./app/assets/builds/active_admin.css --no-source-map --load-path=node_modules",
     "start": "esbuild app/javascript/*.* --bundle --sourcemap --outdir=app/assets/builds --watch",
-    "start:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify --watch && sass ./app/assets/stylesheets/active_admin.scss ./app/assets/builds/active_admin.css --no-source-map --load-path=node_modules"
+    "start:css": "sass ./app/assets/stylesheets/active_admin.scss ./app/assets/builds/active_admin.css --no-source-map --load-path=node_modules && tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify --watch"
   }
 }

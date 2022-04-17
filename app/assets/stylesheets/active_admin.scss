@@ -1,3 +1,10 @@
-@import "@activeadmin/activeadmin/src/scss/mixins";
-@import "@activeadmin/activeadmin/src/scss/base";
+@import '@activeadmin/activeadmin/src/scss/mixins';
+@import '@activeadmin/activeadmin/src/scss/base';
 
+$error-color: #932419;
+
+li.error {
+  .select2-selection {
+    border-color: $error-color;
+  }
+}
