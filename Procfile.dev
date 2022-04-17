@@ -1,4 +1,3 @@
-web: bin/rails s
 js: yarn start
 css: yarn start:css
-bot: bin/rails telegram:bot:poller
+bot: rails telegram:bot:poller

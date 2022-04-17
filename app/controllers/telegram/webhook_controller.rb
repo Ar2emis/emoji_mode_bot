@@ -1,46 +1,34 @@
 # frozen_string_literal: true
 
 class Telegram::WebhookController < Telegram::Bot::UpdatesController
-  ON = 'on'
-  CHAT_KEY = '@all'
-  AIR_ALERT_KEY = '@air_alert'
-  ALERT_URL = 'https://war-api.ukrzen.in.ua/alerts/api/v2/alerts/active.json'
-  ALERT_CHECK_PERIOD = 2.minutes
-
-  @chats = {}
-  @banned_channels = (ENV['CHANNELS'] || '').split(',').map(&:strip).index_with { |_id| nil }
-  @admins = (ENV['ADMINS'] || '').split(',').map(&:strip).index_with { |_username| nil }
-  @alert_places = (ENV['PLACES'] || '').split(',').map(&:strip)
-  # rubocop:disable Style/OpenStructUse
-  @air_alert = OpenStruct.new(on: false, updated_at: DateTime.now - ALERT_CHECK_PERIOD)
-  # rubocop:enable Style/OpenStructUse
+  after_action :update_resources, :current_membership
+  after_action :target_user_membership, only: %i[ban! forgive!]
+  after_action :delete_message, except: %i[message action_missing]
 
   def status!(*)
     return unless admin?
 
-    delete_message
-    info = { chat: current_chat, air_alert: air_alert.to_h, alert_places: self.class.alert_places }
-    bot.send_message(chat_id: chat['id'], text: info.to_json)
+    info = { chat: current_chat.attributes, air_alert: air_alert.attributes }
+    bot.send_message(chat_id: current_chat.telegram_id, text: info.to_json)
   end
 
-  def add!(*)
-    current_chat[nickname] = nil if admin? && nickname
-    delete_message
+  def ban!(*)
+    return unless admin?
+
+    target_user.bans.active.update(active: false)
+    target_user.bans.create(chat: current_chat)
   end
 
-  def delete!(*)
-    current_chat.delete(nickname) if admin? && nickname
-    delete_message
+  def forgive!(*)
+    target_user.bans.active.where(chat: current_chat).update(active: false) if admin?
   end
 
   def mode!(word = nil, *)
-    current_chat[CHAT_KEY] = word.downcase == ON if admin?
-    delete_message
+    current_chat.update(emoji_mode: word&.downcase == Constants::ON) if admin?
   end
 
   def air_alert!(word = nil, *)
-    current_chat[AIR_ALERT_KEY] = word.downcase == ON if admin?
-    delete_message
+    current_chat.update(air_alert_mode: word&.downcase == Constants::ON) if admin?
   end
 
   # rubocop:disable Style/GuardClause
@@ -59,59 +47,92 @@ class Telegram::WebhookController < Telegram::Bot::UpdatesController
   private
 
   def air_alert_enabled?
-    current_chat[AIR_ALERT_KEY]
+    current_chat.air_alert_mode?
   end
 
   # rubocop:disable Metrics/AbcSize
   def air_alert?
-    if air_alert.updated_at < DateTime.now - ALERT_CHECK_PERIOD
-      places = HTTParty.get(ALERT_URL)['alerts'].map { |place| place['n'] }
-      air_alert.on = (places & self.class.alert_places).any?
-      air_alert.updated_at = DateTime.now
+    if air_alert.updated_at < Time.zone.now - AirAlert::ALERT_CHECK_PERIOD
+      places = HTTParty.get(AirAlert::ALERT_URL)['alerts'].map { |place| place['n'] }
+      air_alert.update(places:, updated_at: Time.zone.now)
     end
-    air_alert.on
+    (air_alert.places & current_chat.alert_places).any?
   rescue StandardError
     false
   end
   # rubocop:enable Metrics/AbcSize
 
   def message_not_allowed?
-    payload['text'].to_s.match?(/[\p{L}\x00-\x7F]/) || !payload['sticker']
+    payload[:text].to_s.match?(/[\p{L}\x00-\x7F]/) || !payload[:sticker]
   end
 
   def delete_message
-    bot.delete_message(chat_id: chat['id'], message_id: payload['message_id'])
+    bot.delete_message(chat_id: current_chat.telegram_id, message_id: payload[:message_id])
   end
 
   def banned_user?
-    current_chat.key?(from['username'])
+    current_user.bans.active.exists?(chat: current_chat)
   end
 
   def banned_channel?
-    self.class.banned_channels.key?(payload.dig('forward_from_chat', 'id')&.to_s)
+    Channel.exists?(banned: true, telegram_id: payload.dig(:forward_from_chat, :id))
   end
 
   def emoji_mode?
-    current_chat[CHAT_KEY]
+    current_chat.emoji_mode?
   end
 
   def admin?
-    self.class.admins.key?(from['username'])
-  end
-
-  def nickname
-    payload['text']&.split('@')&.last
+    Membership.admin_role.exists?(chat: current_chat, user: current_user)
   end
 
   def current_chat
-    self.class.chats[chat['id']] ||= {}
+    @current_chat ||= Chat.create_with(chat_params).find_or_create_by(telegram_id: chat[:id])
+  end
+
+  def current_user
+    @current_user ||= User.create_with(user_params).find_or_create_by(telegram_id: from[:id])
+  end
+
+  def update_resources
+    current_user.update(user_params)
+    current_chat.update(chat_params)
+  end
+
+  def current_membership
+    @current_membership ||= current_user.memberships.find_or_create_by(chat: current_chat)
+  end
+
+  def target_user
+    @target_user ||= User.create_with(target_user_params)
+                         .find_or_create_by(telegram_id: target_user_params[:telegram_id])
+  end
+
+  def target_user_membership
+    @target_user_membership ||= target_user.memberships.find_or_create_by(chat: current_chat)
   end
 
   def air_alert
-    self.class.air_alert
+    @air_alert ||= AirAlert.first
   end
 
-  class << self
-    attr_reader :chats, :logger, :admins, :banned_channels, :air_alert, :alert_places
+  def payload
+    super.with_indifferent_access
+  end
+
+  def user_params
+    @user_params ||= from.slice(:first_name, :last_name, :username).merge(bot: from[:is_bot])
+  end
+
+  def chat_params
+    @chat_params ||= chat.slice(:title)
+  end
+
+  def target_user_params
+    return @target_user_params if @target_user_params
+
+    params = payload.dig(:reply_to_message, :from)
+    @target_user_params = params.slice(:first_name, :last_name, :username)
+                                .merge(bot: params[:is_bot], telegram_id: params[:id])
   end
 end
