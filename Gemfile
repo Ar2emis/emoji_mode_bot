@@ -5,6 +5,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '3.1.2'
 
+gem 'action_policy', '~> 0.6.0'
 gem 'activeadmin', '~> 2.11.1'
 gem 'activeadmin_addons', '~> 1.9.0'
 gem 'bootsnap', '~> 1.11.1', require: false
@@ -12,6 +13,7 @@ gem 'cssbundling-rails', '~> 1.1.0'
 gem 'devise', '~> 4.8.1'
 gem 'draper', '~> 4.0.2'
 gem 'httparty', '~> 0.20.0'
+gem 'interactor-rails', '~> 2.2.1'
 gem 'jsbundling-rails', '~> 1.0.2'
 gem 'pg', '~> 1.1'
 gem 'pg_search', '~> 2.3.6'

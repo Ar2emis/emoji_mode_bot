@@ -7,6 +7,7 @@ ActiveAdmin.register AirAlert do
 
   show title: ->(_) { AirAlert.name.titleize } do
     attributes_table do
+      row(:updated_at)
       row(:places) do
         next if air_alert.places.none?
 
