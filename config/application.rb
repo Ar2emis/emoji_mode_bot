@@ -20,6 +20,8 @@ module EmojiModeBot
   class Application < Rails::Application
     config.load_defaults 7.0
     config.eager_load_paths << root.join('lib')
+    config.time_zone = 'Kyiv'
+    config.active_record.default_timezone = :local
     config.generators.system_tests = nil
   end
 end
