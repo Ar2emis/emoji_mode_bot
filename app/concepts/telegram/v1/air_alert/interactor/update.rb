@@ -2,7 +2,7 @@
 
 module Telegram::V1
   module AirAlert::Interactor
-    class Get < ApplicationInteractor
+    class Update < ApplicationInteractor
       def call
         context.air_alert = ::AirAlert.first
         update
@@ -11,8 +11,6 @@ module Telegram::V1
       private
 
       def update
-        return if context.air_alert.updated_at > Time.zone.now - ::AirAlert::ALERT_CHECK_PERIOD
-
         begin
           places = HTTParty.get(::AirAlert::ALERT_URL)['alerts'].map { |place| place['n'] }
         rescue StandardError => e

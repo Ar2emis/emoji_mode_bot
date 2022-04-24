@@ -18,7 +18,7 @@ module Telegram::V1
       end
 
       def air_alert?
-        (Telegram::V1::AirAlert::Interactor::Get.call.air_alert.places & context.current_chat.alert_places).any?
+        (AirAlert.first.places & context.current_chat.alert_places).any?
       end
 
       def banned_user?

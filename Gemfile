@@ -19,6 +19,8 @@ gem 'pg', '~> 1.1'
 gem 'pg_search', '~> 2.3.6'
 gem 'puma', '~> 5.0'
 gem 'rails', '~> 7.0.2', '>= 7.0.2.3'
+gem 'sidekiq', '~> 6.4.2'
+gem 'sidekiq-cron', '~> 1.3'
 gem 'sprockets-rails', '~> 3.4.2'
 gem 'telegram-bot', '~> 0.15.6'
 
