@@ -12,7 +12,13 @@ class User < ApplicationRecord
   multisearchable against: %i[first_name last_name username]
   pg_search_scope :search_by_name, against: %i[first_name last_name username], using: { trigram: { threshold: 0.25 } }
 
-  def self.ransackable_scopes(_auth = nil)
-    super << :search_by_name
+  class << self
+    def ransackable_scopes(_auth = nil)
+      super << :search_by_name
+    end
+
+    def decorator_class
+      ::Telegram::V1::User::Decorator
+    end
   end
 end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ActiveAdmin.register Membership do
-  decorate_with MembershipDecorator
+  decorate_with Telegram::V1::User::Membership::Decorator
   permit_params :role
 
   menu false

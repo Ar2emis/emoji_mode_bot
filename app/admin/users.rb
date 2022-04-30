@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ActiveAdmin.register User do
-  decorate_with UserDecorator
+  decorate_with Telegram::V1::User::Decorator
   actions :index, :show, :edit, :update
 
   permit_params memberships_attributes: [:role]
